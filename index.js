@@ -1,6 +1,8 @@
 const fs = require("fs");
 const http = require("http");
 const url = require("url");
+const slugify = require("slugify");
+
 const replaceTemplate = require("./modules/replaceTemplate")
 
 const tempOverview = fs.readFileSync(
@@ -40,11 +42,18 @@ const server = http.createServer((req, res) => {
   }
 
   // Product Page
-  else if (pathname === "/product" && query?.id) {
+  else if (pathname === "/product") {
     const product = dataObj?.find((el) => el?.id?.toString() === query?.id);
-    const productHTML = replaceTemplate(tempProduct, product);
+    // const product = dataObj?.find((el) => slugify(el?.productName,{lower:true}) === query?.id);
+    const productHTML = product ? replaceTemplate(tempProduct, product) :
+     `<h2>Product Not Found</h2>`;
 
-    res.end(productHTML);
+    res.writeHead(404, {
+      "Content-type": "text/html",
+      "My-Header": "This is my custom header",
+    });
+
+    query.id ? res.end(productHTML) : res.end("<h2>Page Not Found</h2>");
   }
 
   // API
@@ -61,7 +70,7 @@ const server = http.createServer((req, res) => {
       "Content-type": "text/html",
       "My-Header": "This is my custom header",
     });
-    res.end("<h1>Page Not Found</h1>");
+    res.end("<h2>Page Not Found</h2>");
   }
 });
 
